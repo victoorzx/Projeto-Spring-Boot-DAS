@@ -21,6 +21,9 @@ import br.com.sistemas.chamados.exception.RegraNegocioException;
 import org.springframework.data.domain.Pageable;
 import br.com.sistemas.chamados.dto.PaginaResponse;
 import br.com.sistemas.chamados.entity.Prioridade;
+import br.com.sistemas.chamados.dto.ChamadoDetalheResponse;
+import br.com.sistemas.chamados.dto.ComentarioResponse;
+import br.com.sistemas.chamados.repository.ComentarioRepository;
 
 @Service
 public class ChamadoService {
@@ -29,15 +32,28 @@ public class ChamadoService {
     private final ClienteRepository clienteRepository;
     private final CategoriaService categoriaService;
     private final TecnicoService tecnicoService;
+    private final ComentarioRepository comentarioRepository;
 
     public ChamadoService(ChamadoRepository repository,
-                          ClienteRepository clienteRepository,
-                          CategoriaService categoriaService,
-                          TecnicoService tecnicoService) {
-        this.repository = repository;
-        this.clienteRepository = clienteRepository;
-        this.categoriaService = categoriaService;
-        this.tecnicoService = tecnicoService;
+                      ClienteRepository clienteRepository,
+                      CategoriaService categoriaService,
+                      TecnicoService tecnicoService,
+                      ComentarioRepository comentarioRepository) {
+    this.repository = repository;
+    this.clienteRepository = clienteRepository;
+    this.categoriaService = categoriaService;
+    this.tecnicoService = tecnicoService;
+    this.comentarioRepository = comentarioRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public ChamadoDetalheResponse buscarDetalhe(Long id) {
+    Chamado chamado = buscarEntity(id);
+    List<ComentarioResponse> comentarios = comentarioRepository
+        .findByChamadoIdOrderByDataAsc(id).stream()
+        .map(ComentarioResponse::de)
+        .toList();
+    return new ChamadoDetalheResponse(ChamadoResponse.de(chamado), comentarios);
     }
 
     @Transactional

@@ -19,6 +19,7 @@ import org.springframework.data.web.PageableDefault;
 import br.com.sistemas.chamados.dto.PaginaResponse;
 import br.com.sistemas.chamados.entity.Prioridade;
 import br.com.sistemas.chamados.entity.StatusChamado;
+import br.com.sistemas.chamados.dto.ChamadoDetalheResponse;
 
 @RestController
 @RequestMapping("/chamados")
@@ -46,8 +47,8 @@ public PaginaResponse<ChamadoResponse> listar(
 }
 
     @GetMapping("/{id}")
-    public ChamadoResponse buscar(@PathVariable Long id) {
-        return service.buscar(id);
+    public ChamadoDetalheResponse buscar(@PathVariable Long id) {
+    return service.buscarDetalhe(id);
     }
 
     @PutMapping("/{id}")
