@@ -18,6 +18,9 @@ import br.com.sistemas.chamados.dto.AlterarStatusRequest;
 import br.com.sistemas.chamados.dto.AtribuirTecnicoRequest;
 import br.com.sistemas.chamados.exception.ChamadoFechadoException;
 import br.com.sistemas.chamados.exception.RegraNegocioException;
+import org.springframework.data.domain.Pageable;
+import br.com.sistemas.chamados.dto.PaginaResponse;
+import br.com.sistemas.chamados.entity.Prioridade;
 
 @Service
 public class ChamadoService {
@@ -54,9 +57,20 @@ public class ChamadoService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChamadoResponse> listar() {
-        return repository.findAll().stream().map(ChamadoResponse::de).toList();
+public PaginaResponse<ChamadoResponse> listar(
+        StatusChamado status, Prioridade prioridade, Long clienteId, Pageable pageable) {
+    return PaginaResponse.de(
+        repository.filtrar(status, prioridade, clienteId, pageable).map(ChamadoResponse::de));
+}
+
+@Transactional(readOnly = true)
+public PaginaResponse<ChamadoResponse> listarPorCliente(Long clienteId, Pageable pageable) {
+    if (!clienteRepository.existsById(clienteId)) {
+        throw new RecursoNaoEncontradoException("Cliente " + clienteId + " não encontrado");
     }
+    return PaginaResponse.de(
+        repository.findByClienteId(clienteId, pageable).map(ChamadoResponse::de));
+}
 
     @Transactional(readOnly = true)
     public ChamadoResponse buscar(Long id) {
