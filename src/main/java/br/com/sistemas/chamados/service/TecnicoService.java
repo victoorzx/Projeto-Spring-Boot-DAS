@@ -57,7 +57,6 @@ public class TecnicoService {
         repository.delete(buscarEntity(id));
     }
 
-    // usado depois pelo Chamado (atribuição)
     public Tecnico buscarEntity(Long id) {
         return repository.findById(id)
             .orElseThrow(() -> new RecursoNaoEncontradoException("Técnico " + id + " não encontrado"));
