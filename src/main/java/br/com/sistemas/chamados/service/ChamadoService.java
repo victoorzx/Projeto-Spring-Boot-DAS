@@ -14,6 +14,10 @@ import br.com.sistemas.chamados.entity.StatusChamado;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
 import br.com.sistemas.chamados.repository.ChamadoRepository;
 import br.com.sistemas.chamados.repository.ClienteRepository;
+import br.com.sistemas.chamados.dto.AlterarStatusRequest;
+import br.com.sistemas.chamados.dto.AtribuirTecnicoRequest;
+import br.com.sistemas.chamados.exception.ChamadoFechadoException;
+import br.com.sistemas.chamados.exception.RegraNegocioException;
 
 @Service
 public class ChamadoService {
@@ -62,6 +66,7 @@ public class ChamadoService {
     @Transactional
     public ChamadoResponse atualizar(Long id, ChamadoRequest dto) {
         Chamado chamado = buscarEntity(id);
+        garantirNaoFechado(chamado);
         chamado.setTitulo(dto.titulo());
         chamado.setDescricao(dto.descricao());
         chamado.setPrioridade(dto.prioridade());
@@ -84,5 +89,36 @@ public class ChamadoService {
     private Cliente buscarCliente(Long id) {
         return clienteRepository.findById(id)
             .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente " + id + " não encontrado"));
+    }
+
+    @Transactional
+    public ChamadoResponse atribuir(Long id, AtribuirTecnicoRequest dto) {
+    Chamado chamado = buscarEntity(id);
+    garantirNaoFechado(chamado);
+    chamado.setTecnico(tecnicoService.buscarEntity(dto.tecnicoId()));
+    return ChamadoResponse.de(chamado);
+    }
+
+    @Transactional
+    public ChamadoResponse alterarStatus(Long id, AlterarStatusRequest dto) {
+    Chamado chamado = buscarEntity(id);
+    garantirNaoFechado(chamado);
+    StatusChamado destino = dto.status();
+    if (!chamado.getStatus().podeIrPara(destino)) {
+        throw new RegraNegocioException(
+            "Transição de status inválida: " + chamado.getStatus() + " para " + destino);
+    }
+    chamado.setStatus(destino);
+    if (destino == StatusChamado.FECHADO) {
+        chamado.setDataFechamento(LocalDateTime.now());
+    }
+    return ChamadoResponse.de(chamado);
+    }
+
+    private void garantirNaoFechado(Chamado chamado) {
+    if (chamado.getStatus() == StatusChamado.FECHADO) {
+        throw new ChamadoFechadoException(
+            "Chamado " + chamado.getId() + " está fechado e não pode ser alterado");
+    }
     }
 }
