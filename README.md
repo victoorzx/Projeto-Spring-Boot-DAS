@@ -27,7 +27,13 @@ macOS e Linux:
 ./mvnw spring-boot:run
 ```
 
-A aplicação sobe em `http://localhost:8080`. A rota `/` retorna 404, o que é esperado, pois não há controller mapeado para a raiz.
+A aplicação sobe em `http://localhost:8080`, onde fica a interface web (chamados, clientes, categorias e técnicos). A API REST continua disponível nas mesmas rotas.
+
+## Interface web
+
+O frontend é feito em HTML, CSS e JavaScript puro, fica em `src/main/resources/static` e é servido pelo próprio Spring Boot. Ele consome a API REST, então não precisa de Node nem de um segundo servidor.
+
+Telas: lista de chamados com filtros e paginação, novo chamado, detalhe do chamado (status, atribuição de técnico e comentários) e cadastro de clientes, categorias e técnicos.
 
 ### Banco de dados (H2)
 
